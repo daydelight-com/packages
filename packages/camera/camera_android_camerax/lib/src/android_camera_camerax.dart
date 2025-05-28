@@ -1031,11 +1031,6 @@ class AndroidCameraCameraX extends CameraPlatform {
   Future<void> prepareForVideoRecordingAndroid(
     VideoCaptureOptions options,
   ) async {
-    if (recording != null) {
-      // There is currently an active recording, so do not start a new one.
-      return;
-    }
-
     dynamic Function(CameraImageData)? streamCallback = options.streamCallback;
     if (!_previewIsPaused) {
       // The plugin binds the preview use case to the camera lifecycle when
@@ -1081,6 +1076,15 @@ class AndroidCameraCameraX extends CameraPlatform {
     }
 
     await _bindUseCaseToLifecycle(videoCapture!, options.cameraId);
+
+    // プレビューにも同じ回転を適用する
+    if (!captureOrientationLocked && shouldSetDefaultRotation) {
+      final int rotation =
+          await deviceOrientationManager.getDefaultDisplayRotation();
+      if (preview != null) {
+        await preview?.setTargetRotation(rotation);
+      }
+    }
 
     // Set target rotation to default CameraX rotation only if capture
     // orientation not locked.
@@ -1128,10 +1132,10 @@ class AndroidCameraCameraX extends CameraPlatform {
   /// limitations of the platform interface.
   @override
   Future<void> startVideoCapturing(VideoCaptureOptions options) async {
-    // if (recording != null) {
-    //   // There is currently an active recording, so do not start a new one.
-    //   return;
-    // }
+    if (recording != null) {
+      // There is currently an active recording, so do not start a new one.
+      return;
+    }
     //
     // dynamic Function(CameraImageData)? streamCallback = options.streamCallback;
     // if (!_previewIsPaused) {
