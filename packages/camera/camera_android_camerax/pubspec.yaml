@@ -7,6 +7,7 @@ version: 0.6.18
 environment:
   sdk: ^3.7.0
   flutter: ">=3.29.0"
+publish_to: none
 
 flutter:
   plugin:
@@ -24,6 +25,13 @@ dependencies:
     sdk: flutter
   meta: ^1.7.0
   stream_transform: ^2.1.0
+
+dependency_overrides:
+  camera_platform_interface:
+    git:
+      url: https://github.com/daydelight-com/packages.git
+      ref: add-prepare-recording-api
+      path: packages/camera/camera_platform_interface
 
 dev_dependencies:
   build_runner: ^2.2.0

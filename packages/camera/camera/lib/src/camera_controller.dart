@@ -397,6 +397,13 @@ class CameraController extends ValueNotifier<CameraValue> {
     await CameraPlatform.instance.prepareForVideoRecording();
   }
 
+  /// AndroidではstartVideoRecordingの中でprepareが呼ばれており、そのため録画を開始すると直前のプレビューとずれることがあった。
+  /// そのため、startVideoRecordingの中で行なっていたことをこのメソッドで行う。
+  Future<void> prepareForVideoRecordingAndroid() async {
+    await CameraPlatform.instance
+        .prepareForVideoRecordingAndroid(VideoCaptureOptions(_cameraId));
+  }
+
   /// Pauses the current camera preview
   Future<void> pausePreview() async {
     if (value.isPreviewPaused || !value.isInitialized || _isDisposed) {

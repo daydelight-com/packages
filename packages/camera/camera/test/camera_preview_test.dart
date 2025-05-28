@@ -67,6 +67,9 @@ class FakeController extends ValueNotifier<CameraValue>
   Future<void> prepareForVideoRecording() async {}
 
   @override
+  Future<void> prepareForVideoRecordingAndroid() async {}
+
+  @override
   ResolutionPreset get resolutionPreset => ResolutionPreset.low;
 
   @override

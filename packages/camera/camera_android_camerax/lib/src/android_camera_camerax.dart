@@ -11,6 +11,7 @@ import 'package:flutter/services.dart'
     show DeviceOrientation, PlatformException;
 import 'package:flutter/widgets.dart' show Texture, Widget, visibleForTesting;
 import 'package:stream_transform/stream_transform.dart';
+
 import 'camerax_library.dart';
 import 'camerax_proxy.dart';
 import 'rotated_preview_delegate.dart';
@@ -1026,30 +1027,10 @@ class AndroidCameraCameraX extends CameraPlatform {
     return Future<void>.value();
   }
 
-  /// Configures and starts a video recording. Returns silently without doing
-  /// anything if there is currently an active recording.
-  ///
-  /// Note that the preset resolution is used to configure the recording, but
-  /// 240p ([ResolutionPreset.low]) is unsupported and will fallback to
-  /// configure the recording as the next highest available quality.
-  ///
-  /// This method is deprecated in favour of [startVideoCapturing].
   @override
-  Future<void> startVideoRecording(
-    int cameraId, {
-    Duration? maxVideoDuration,
-  }) async {
-    // Ignore maxVideoDuration, as it is unimplemented and deprecated.
-    return startVideoCapturing(VideoCaptureOptions(cameraId));
-  }
-
-  /// Starts a video recording and/or streaming session.
-  ///
-  /// Please see [VideoCaptureOptions] for documentation on the
-  /// configuration options. Currently streamOptions are unsupported due to
-  /// limitations of the platform interface.
-  @override
-  Future<void> startVideoCapturing(VideoCaptureOptions options) async {
+  Future<void> prepareForVideoRecordingAndroid(
+    VideoCaptureOptions options,
+  ) async {
     if (recording != null) {
       // There is currently an active recording, so do not start a new one.
       return;
@@ -1121,12 +1102,109 @@ class AndroidCameraCameraX extends CameraPlatform {
     pendingRecording = await pendingRecording!.withAudioEnabled(
       /* initialMuted */ !enableRecordingAudio,
     );
+  }
+
+  /// Configures and starts a video recording. Returns silently without doing
+  /// anything if there is currently an active recording.
+  ///
+  /// Note that the preset resolution is used to configure the recording, but
+  /// 240p ([ResolutionPreset.low]) is unsupported and will fallback to
+  /// configure the recording as the next highest available quality.
+  ///
+  /// This method is deprecated in favour of [startVideoCapturing].
+  @override
+  Future<void> startVideoRecording(
+    int cameraId, {
+    Duration? maxVideoDuration,
+  }) async {
+    // Ignore maxVideoDuration, as it is unimplemented and deprecated.
+    return startVideoCapturing(VideoCaptureOptions(cameraId));
+  }
+
+  /// Starts a video recording and/or streaming session.
+  ///
+  /// Please see [VideoCaptureOptions] for documentation on the
+  /// configuration options. Currently streamOptions are unsupported due to
+  /// limitations of the platform interface.
+  @override
+  Future<void> startVideoCapturing(VideoCaptureOptions options) async {
+    // if (recording != null) {
+    //   // There is currently an active recording, so do not start a new one.
+    //   return;
+    // }
+    //
+    // dynamic Function(CameraImageData)? streamCallback = options.streamCallback;
+    // if (!_previewIsPaused) {
+    //   // The plugin binds the preview use case to the camera lifecycle when
+    //   // createCamera is called, but camera use cases can become limited
+    //   // when video recording and displaying a preview concurrently. This logic
+    //   // will prioritize attempting to continue displaying the preview,
+    //   // stream images, and record video if specified and supported. Otherwise,
+    //   // the preview must be paused in order to allow those concurrently. See
+    //   // https://developer.android.com/media/camera/camerax/architecture#combine-use-cases
+    //   // for more information on supported concurrent camera use cases.
+    //   final Camera2CameraInfo camera2CameraInfo = proxy.fromCamera2CameraInfo(
+    //     cameraInfo: cameraInfo!,
+    //   );
+    //   final InfoSupportedHardwareLevel cameraInfoSupportedHardwareLevel =
+    //       (await camera2CameraInfo.getCameraCharacteristic(
+    //             proxy.infoSupportedHardwareLevelCameraCharacteristics(),
+    //           ))!
+    //           as InfoSupportedHardwareLevel;
+    //
+    //   // Handle limited level device restrictions:
+    //   final bool cameraSupportsConcurrentImageCapture =
+    //       cameraInfoSupportedHardwareLevel != InfoSupportedHardwareLevel.legacy;
+    //   if (!cameraSupportsConcurrentImageCapture) {
+    //     // Concurrent preview + video recording + image capture is not supported
+    //     // unless the camera device is cameraSupportsHardwareLevelLimited or
+    //     // better.
+    //     await _unbindUseCaseFromLifecycle(imageCapture!);
+    //   }
+    //
+    //   // Handle level 3 device restrictions:
+    //   final bool cameraSupportsHardwareLevel3 =
+    //       cameraInfoSupportedHardwareLevel == InfoSupportedHardwareLevel.level3;
+    //   if (!cameraSupportsHardwareLevel3 || streamCallback == null) {
+    //     // Concurrent preview + video recording + image streaming is not supported
+    //     // unless the camera device is cameraSupportsHardwareLevel3 or better.
+    //     streamCallback = null;
+    //     await _unbindUseCaseFromLifecycle(imageAnalysis!);
+    //   } else {
+    //     // If image streaming concurrently with video recording, image capture
+    //     // is unsupported.
+    //     await _unbindUseCaseFromLifecycle(imageCapture!);
+    //   }
+    // }
+    //
+    // await _bindUseCaseToLifecycle(videoCapture!, options.cameraId);
+    //
+    // // Set target rotation to default CameraX rotation only if capture
+    // // orientation not locked.
+    // if (!captureOrientationLocked && shouldSetDefaultRotation) {
+    //   await videoCapture!.setTargetRotation(
+    //     await deviceOrientationManager.getDefaultDisplayRotation(),
+    //   );
+    // }
+    //
+    // videoOutputPath = await systemServicesManager.getTempFilePath(
+    //   videoPrefix,
+    //   '.temp',
+    // );
+    // pendingRecording = await recorder!.prepareRecording(videoOutputPath!);
+    //
+    // // Enable/disable recording audio as requested. If enabling audio is requested
+    // // and permission was not granted when the camera was created, then recording
+    // // audio will be disabled to respect the denied permission.
+    // pendingRecording = await pendingRecording!.withAudioEnabled(
+    //   /* initialMuted */ !enableRecordingAudio,
+    // );
 
     recording = await pendingRecording!.start(_videoRecordingEventListener);
 
-    if (streamCallback != null) {
-      onStreamedFrameAvailable(options.cameraId).listen(streamCallback);
-    }
+    // if (streamCallback != null) {
+    //   onStreamedFrameAvailable(options.cameraId).listen(streamCallback);
+    // }
 
     // Wait for video recording to start.
     VideoRecordEvent event = await videoRecordingEventStreamQueue.next;
