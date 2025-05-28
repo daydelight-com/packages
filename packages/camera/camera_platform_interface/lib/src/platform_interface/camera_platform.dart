@@ -138,6 +138,12 @@ abstract class CameraPlatform extends PlatformInterface {
     throw UnimplementedError('prepareForVideoRecording() is not implemented.');
   }
 
+  /// Android のみでキャプチャセッションを準備する。
+  Future<void> prepareForVideoRecordingAndroid() {
+    throw UnimplementedError(
+        'prepareForVideoRecordingAndroid() is not implemented.');
+  }
+
   /// Starts a video recording.
   ///
   /// This method is deprecated in favour of [startVideoCapturing].
