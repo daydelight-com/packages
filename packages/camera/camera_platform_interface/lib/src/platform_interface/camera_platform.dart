@@ -139,7 +139,7 @@ abstract class CameraPlatform extends PlatformInterface {
   }
 
   /// Android のみでキャプチャセッションを準備する。
-  Future<void> prepareForVideoRecordingAndroid() {
+  Future<void> prepareForVideoRecordingAndroid(VideoCaptureOptions options) {
     throw UnimplementedError(
         'prepareForVideoRecordingAndroid() is not implemented.');
   }
